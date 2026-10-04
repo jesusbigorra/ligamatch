@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { me } from "@/lib/auth";
+import { me, isAdmin } from "@/lib/auth";
 import { SignInButton, SignOutButton } from "./AuthButtons";
 import Nav from "./Nav";
 
 export default async function Header() {
   const user = await me();
+  const admin = user ? await isAdmin() : false;
   return (
     <>
       <header>
@@ -26,7 +27,7 @@ export default async function Header() {
           )}
         </div>
       </header>
-      <Nav />
+      <Nav admin={admin} />
     </>
   );
 }

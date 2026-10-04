@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const tabs: [string, string][] = [
+const publicTabs: [string, string][] = [
   ["/", "Jornadas"],
   ["/sedes", "Sedes"],
   ["/inscripcion", "Inscripción"],
   ["/premios", "Premios"],
   ["/patrocinios", "Patrocinios"],
-  ["/admin", "Admin"],
 ];
 
-export default function Nav() {
+export default function Nav({ admin = false }: { admin?: boolean }) {
   const path = usePathname();
+  const tabs = admin ? [...publicTabs, ["/admin", "Admin"] as [string, string]] : publicTabs;
   return (
     <nav aria-label="Secciones">
       {tabs.map(([href, label]) => {

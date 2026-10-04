@@ -1,11 +1,22 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { standings, type Match } from "@/lib/standings";
 import { fmtDate } from "@/lib/format";
+import { me } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function Jornadas() {
   const sql = db();
+  const user = await me();
+
+  // Comprobar si el usuario ya está inscrito
+  let playerStatus: string | null = null;
+  if (user) {
+    const rows = (await sql`select status from players where auth_user_id = ${user.id}`) as { status: string }[];
+    playerStatus = rows.length > 0 ? rows[0].status : null;
+  }
+
   const venues = (await sql`select id, name from venues order by sort`) as { id: string; name: string }[];
   const matches = (await sql`
     select id, round, venue_id,
@@ -25,6 +36,28 @@ export default async function Jornadas() {
       <div className="head">
         <h2>Jornadas</h2>
       </div>
+
+      {user && playerStatus === null && (
+        <div className="card" style={{ borderLeft: "6px solid var(--pitch)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center", justifyContent: "space-between" }}>
+            <span><b>¡Bienvenido, {user.name}!</b> Completa tu inscripción para participar.</span>
+            <Link href="/inscripcion" className="btn sm">Inscribirme</Link>
+          </div>
+        </div>
+      )}
+
+      {user && playerStatus === "Pendiente" && (
+        <div className="card" style={{ borderLeft: "6px solid var(--warn)" }}>
+          <span>Tu perfil está <span className="tag warn">Pendiente</span> de verificación por el organizador.</span>
+        </div>
+      )}
+
+      {user && playerStatus === "Verificado" && (
+        <div className="card" style={{ borderLeft: "6px solid var(--ok)" }}>
+          <span>Estás <span className="tag ok">Verificado</span>. Listo para competir.</span>
+        </div>
+      )}
+
       <div className="two">
         <div style={{ display: "grid", gap: 24, minWidth: 0 }}>
           {rounds.size === 0 && <p className="muted">Todavía no hay partidos programados.</p>}
