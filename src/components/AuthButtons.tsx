@@ -1,6 +1,6 @@
 "use client";
 
-import { authClient } from "@/lib/auth/client";
+import { SignInButton as ClerkSignIn, SignOutButton as ClerkSignOut } from "@clerk/nextjs";
 
 function GoogleIcon() {
   return (
@@ -15,26 +15,19 @@ function GoogleIcon() {
 
 export function SignInButton({ label = "Continuar con Google", small = false }: { label?: string; small?: boolean }) {
   return (
-    <button
-      className={`btn google${small ? " sm" : ""}`}
-      onClick={() => authClient.signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-    >
-      <GoogleIcon />
-      {label}
-    </button>
+    <ClerkSignIn mode="redirect">
+      <button className={`btn google${small ? " sm" : ""}`}>
+        <GoogleIcon />
+        {label}
+      </button>
+    </ClerkSignIn>
   );
 }
 
 export function SignOutButton() {
   return (
-    <button
-      className="btn sm alt"
-      onClick={async () => {
-        await authClient.signOut();
-        window.location.reload();
-      }}
-    >
-      Salir
-    </button>
+    <ClerkSignOut>
+      <button className="btn sm alt">Salir</button>
+    </ClerkSignOut>
   );
 }

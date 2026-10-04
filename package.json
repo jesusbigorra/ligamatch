@@ -10,7 +10,8 @@
     "db:seed": "node --env-file=.env.local scripts/db-init.mjs --seed"
   },
   "dependencies": {
-    "@neondatabase/auth": "latest",
+    "@clerk/localizations": "^3",
+    "@clerk/nextjs": "^6",
     "@neondatabase/serverless": "^1",
     "next": "^15",
     "react": "^19",
