@@ -1,13 +1,14 @@
 import { neonAuth } from "@/lib/auth/server";
 
-export type Me = { id: string; email: string; image: string | null; verified: boolean };
+export type Me = { id: string; name: string; email: string; image: string | null; verified: boolean };
 
 /** Usuario con sesión (o null). Las páginas que lo usan deben ser dinámicas. */
 export async function me(): Promise<Me | null> {
   const { data: session } = await neonAuth.getSession();
   const u = session?.user;
   if (!u) return null;
-  return { id: u.id, email: u.email.toLowerCase(), image: u.image ?? null, verified: !!u.emailVerified };
+  const first = (u.name ?? u.email.split("@")[0]).split(" ")[0];
+  return { id: u.id, name: first, email: u.email.toLowerCase(), image: u.image ?? null, verified: !!u.emailVerified };
 }
 
 /** Correo verificado del usuario con sesión, o null. */

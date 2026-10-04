@@ -18,7 +18,7 @@ export default async function Header() {
         <div className="who">
           {user ? (
             <>
-              <span className="muted">{user.email}</span>
+              <span className="greeting">Hola, {user.name}</span>
               <SignOutButton />
             </>
           ) : (
