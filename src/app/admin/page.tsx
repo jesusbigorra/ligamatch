@@ -2,8 +2,8 @@ import { db } from "@/lib/db";
 import { me, isAdmin } from "@/lib/auth";
 import { SignInButton } from "@/components/AuthButtons";
 import { initials } from "@/lib/format";
-import { setPlayerStatus } from "./actions";
-import PhotoEditor from "@/components/PhotoEditor";
+import { setPlayerStatus, createPlayer, updatePlayer } from "./actions";
+import PlayerForm from "@/components/PlayerForm";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +70,7 @@ export default async function Admin() {
   const players = (await sql`
     select id, full_name, age, zone, phone, cedula, email, photo_url, status
     from players order by (status = 'Pendiente') desc, created_at desc`) as AdminPlayer[];
+  const zones = ((await sql`select zone from venues order by sort`) as { zone: string }[]).map((v) => v.zone);
   const pending = players.filter((p) => p.status === "Pendiente").length;
 
   return (
@@ -87,6 +88,12 @@ export default async function Admin() {
           <span>Pendientes de verificar</span>
         </div>
       </div>
+      <section style={{ marginBottom: 24 }}>
+        <h3 style={{ marginBottom: 8 }}>Inscribir jugador</h3>
+        <div className="card" style={{ maxWidth: 560 }}>
+          <PlayerForm action={createPlayer} zones={zones} submitLabel="Inscribir" />
+        </div>
+      </section>
       <section>
         <h3 style={{ marginBottom: 4 }}>Jugadores inscritos</h3>
         <p className="note" style={{ margin: "0 0 10px" }}>
@@ -113,7 +120,14 @@ export default async function Admin() {
                 Cédula {p.cedula} · {p.phone}
               </div>
               <div className="muted">{p.email}</div>
-              <PhotoEditor id={p.id} initial={p.photo_url} name={p.full_name} />
+              <details>
+                <summary className="btn alt sm" style={{ listStyle: "none" }}>
+                  Editar datos y foto
+                </summary>
+                <div style={{ marginTop: 10 }}>
+                  <PlayerForm action={updatePlayer} zones={zones} values={p} submitLabel="Guardar cambios" />
+                </div>
+              </details>
               <div className="actions">
                 {p.status !== "Verificado" && <StatusButton id={p.id} status="Verificado" label="Verificar" />}
                 {p.status !== "Rechazado" && <StatusButton id={p.id} status="Rechazado" label="Rechazar" alt />}
