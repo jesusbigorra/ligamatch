@@ -1,5 +1,7 @@
 import { cleanPhoto } from "./photo";
 
+export type FormState = { error?: string; ok?: boolean };
+
 export const normCedula = (s: string) => s.replace(/-/g, "").toUpperCase();
 
 export type PlayerInput = {

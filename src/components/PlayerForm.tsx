@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import PhotoField from "./PhotoField";
-import type { FormState } from "@/app/admin/actions";
+import type { FormState } from "@/lib/player";
 
 export type PlayerValues = {
   id?: number;
@@ -21,11 +21,13 @@ export default function PlayerForm({
   zones,
   values = {},
   submitLabel,
+  showEmail = true,
 }: {
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   zones: string[];
   values?: PlayerValues;
   submitLabel: string;
+  showEmail?: boolean;
 }) {
   const [state, run, pending] = useActionState<FormState, FormData>(action, {});
   const [n, setN] = useState(0);
@@ -58,10 +60,12 @@ export default function PlayerForm({
           Teléfono
           <input name="phone" type="tel" required minLength={10} maxLength={16} inputMode="tel" defaultValue={values.phone} placeholder="0414-1234567" />
         </label>
-        <label>
-          Correo (opcional)
-          <input name="email" type="email" defaultValue={values.email} placeholder="correo@ejemplo.com" />
-        </label>
+        {showEmail && (
+          <label>
+            Correo (opcional)
+            <input name="email" type="email" defaultValue={values.email} placeholder="correo@ejemplo.com" />
+          </label>
+        )}
       </div>
       <label>
         Zona

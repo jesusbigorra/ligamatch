@@ -1,7 +1,9 @@
 import { db } from "@/lib/db";
 import { initials } from "@/lib/format";
 import { me } from "@/lib/auth";
-import PhotoEditor from "@/components/PhotoEditor";
+import { SignInButton } from "@/components/AuthButtons";
+import PlayerForm from "@/components/PlayerForm";
+import { register, updateOwn } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,35 +17,52 @@ export default async function Inscripcion() {
   const players = (await sql`
     select id, full_name, age, zone, photo_url, status from players order by created_at desc`) as PublicPlayer[];
 
-  // Solo el organizador inscribe jugadores. Quien ya tiene perfil puede cambiar su foto.
   let left;
-  const mine = user
-    ? ((await sql`select status, full_name, photo_url from players where auth_user_id = ${user.id}`) as {
-        status: string;
-        full_name: string;
-        photo_url: string | null;
-      }[])
-    : [];
-  if (mine.length > 0) {
+  if (!user) {
     left = (
       <div className="card gate">
-        <h3>Tu perfil</h3>
-        <p style={{ margin: 0 }}>
-          Estado:{" "}
-          <span className={`tag ${mine[0].status === "Verificado" ? "ok" : "warn"}`}>{mine[0].status}</span>
+        <h3>Entra para inscribirte</h3>
+        <p className="muted" style={{ margin: 0 }}>
+          Usamos tu cuenta de Google para confirmar que eres una persona real. No guardamos tu clave.
         </p>
-        <PhotoEditor initial={mine[0].photo_url} name={mine[0].full_name} />
+        <div>
+          <SignInButton />
+        </div>
       </div>
     );
   } else {
-    left = (
-      <div className="card gate">
-        <h3>Inscripciones con el organizador</h3>
-        <p className="muted" style={{ margin: 0 }}>
-          Los jugadores los inscribe el organizador, que verifica la cédula antes de entregar cualquier premio.
-        </p>
-      </div>
-    );
+    const mine = (await sql`
+      select id, status, full_name, age, cedula, phone, zone, photo_url from players where auth_user_id = ${user.id}`) as {
+      id: number;
+      status: string;
+      full_name: string;
+      age: number;
+      cedula: string;
+      phone: string;
+      zone: string;
+      photo_url: string | null;
+    }[];
+    const zones = ((await sql`select zone from venues order by sort`) as { zone: string }[]).map((v) => v.zone);
+    if (mine.length > 0) {
+      left = (
+        <div className="card gate">
+          <h3>Tu perfil</h3>
+          <p style={{ margin: 0 }}>
+            Estado: <span className={`tag ${mine[0].status === "Verificado" ? "ok" : "warn"}`}>{mine[0].status}</span>
+          </p>
+          <PlayerForm action={updateOwn} zones={zones} values={mine[0]} submitLabel="Guardar cambios" showEmail={false} />
+        </div>
+      );
+    } else {
+      left = (
+        <div className="card gate">
+          <p className="muted" style={{ margin: 0 }}>
+            Cuenta de Google: <b>{user.verified ? user.email : ""}</b>
+          </p>
+          <PlayerForm action={register} zones={zones} submitLabel="Inscribirme" showEmail={false} />
+        </div>
+      );
+    }
   }
 
   return (

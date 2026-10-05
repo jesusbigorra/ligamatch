@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
-import { readPlayer, normCedula } from "@/lib/player";
+import { readPlayer, normCedula, type FormState } from "@/lib/player";
 
 const STATUSES = ["Pendiente", "Verificado", "Rechazado"];
 
@@ -19,8 +19,6 @@ export async function setPlayerStatus(fd: FormData) {
   revalidatePath("/admin");
   revalidatePath("/inscripcion");
 }
-
-export type FormState = { error?: string; ok?: boolean };
 
 const dupMessage = (e: unknown) => {
   const err = e as { code?: string };
