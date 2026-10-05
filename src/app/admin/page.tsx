@@ -3,6 +3,7 @@ import { me, isAdmin } from "@/lib/auth";
 import { SignInButton } from "@/components/AuthButtons";
 import { initials } from "@/lib/format";
 import { setPlayerStatus } from "./actions";
+import PhotoEditor from "@/components/PhotoEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,7 @@ export default async function Admin() {
                 Cédula {p.cedula} · {p.phone}
               </div>
               <div className="muted">{p.email}</div>
+              <PhotoEditor id={p.id} initial={p.photo_url} name={p.full_name} />
               <div className="actions">
                 {p.status !== "Verificado" && <StatusButton id={p.id} status="Verificado" label="Verificar" />}
                 {p.status !== "Rechazado" && <StatusButton id={p.id} status="Rechazado" label="Rechazar" alt />}

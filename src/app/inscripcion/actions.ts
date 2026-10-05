@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { me } from "@/lib/auth";
+import { me, isAdmin } from "@/lib/auth";
+import { cleanPhoto } from "@/lib/photo";
 
 export type FormState = { error?: string };
 
@@ -26,8 +27,8 @@ export async function register(_prev: FormState, fd: FormData): Promise<FormStat
   if (!/^[VE]-?[0-9]{6,9}$/.test(cedula)) return { error: "La cédula debe tener formato V-12345678." };
   if (!zone) return { error: "Elige tu zona." };
 
-  // Foto inicial: la de la cuenta de Google. La subida de foto propia llega en otra fase.
-  const photo = user.image;
+  // Foto opcional del jugador. Nunca se copia la de la cuenta de Google.
+  const photo = cleanPhoto(fd.get("photo"));
 
   const sql = db();
   try {
@@ -49,4 +50,24 @@ export async function register(_prev: FormState, fd: FormData): Promise<FormStat
   revalidatePath("/inscripcion");
   revalidatePath("/admin");
   return {};
+}
+
+/** Cambia o quita la foto. Lo puede hacer el dueño del perfil o un admin. */
+export async function updatePhoto(fd: FormData) {
+  const user = await me();
+  if (!user) throw new Error("No autorizado");
+  const photo = cleanPhoto(fd.get("photo"));
+  const sql = db();
+  if (await isAdmin()) {
+    const id = Number(fd.get("id"));
+    if (Number.isInteger(id)) {
+      await sql`update players set photo_url = ${photo} where id = ${id}`;
+    } else {
+      await sql`update players set photo_url = ${photo} where auth_user_id = ${user.id}`;
+    }
+  } else {
+    await sql`update players set photo_url = ${photo} where auth_user_id = ${user.id}`;
+  }
+  revalidatePath("/inscripcion");
+  revalidatePath("/admin");
 }

@@ -2,8 +2,9 @@
 
 import { useActionState } from "react";
 import { register, type FormState } from "./actions";
+import PhotoField from "@/components/PhotoField";
 
-export default function RegisterForm({ zones, photo, email }: { zones: string[]; photo: string; email: string }) {
+export default function RegisterForm({ zones, email }: { zones: string[]; email: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(register, {});
 
   return (
@@ -11,12 +12,7 @@ export default function RegisterForm({ zones, photo, email }: { zones: string[];
       <p className="muted" style={{ margin: 0 }}>
         Cuenta de Google: <b>{email}</b>
       </p>
-      <div className="photo-pick">
-        <div className="avatar">{photo ? <img src={photo} alt="Tu foto de Google" /> : "+"}</div>
-        <p className="note" style={{ margin: 0, flex: 1 }}>
-          Por ahora usamos la foto de tu cuenta de Google.
-        </p>
-      </div>
+      <PhotoField name="photo" initial={null} initialsFrom="" hint="Opcional. Si no subes foto se muestran tus iniciales." />
       <label>
         Nombre completo
         <input name="name" required maxLength={60} placeholder="Nombre y apellido" autoComplete="name" />

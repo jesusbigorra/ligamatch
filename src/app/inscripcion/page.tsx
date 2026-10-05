@@ -3,6 +3,7 @@ import { initials } from "@/lib/format";
 import { me } from "@/lib/auth";
 import { SignInButton } from "@/components/AuthButtons";
 import RegisterForm from "./RegisterForm";
+import PhotoEditor from "@/components/PhotoEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,11 @@ export default async function Inscripcion() {
       </div>
     );
   } else {
-    const mine = (await sql`select status from players where auth_user_id = ${user.id}`) as { status: string }[];
+    const mine = (await sql`select status, full_name, photo_url from players where auth_user_id = ${user.id}`) as {
+      status: string;
+      full_name: string;
+      photo_url: string | null;
+    }[];
     if (mine.length > 0) {
       left = (
         <div className="card gate">
@@ -42,11 +47,12 @@ export default async function Inscripcion() {
           <p className="muted" style={{ margin: 0 }}>
             El organizador verifica tu cédula antes de entregar cualquier premio.
           </p>
+          <PhotoEditor initial={mine[0].photo_url} name={mine[0].full_name} />
         </div>
       );
     } else {
       const zones = ((await sql`select zone from venues order by sort`) as { zone: string }[]).map((v) => v.zone);
-      left = <RegisterForm zones={zones} photo={user.image ?? ""} email={user.verified ? user.email : ""} />;
+      left = <RegisterForm zones={zones} email={user.verified ? user.email : ""} />;
     }
   }
 
